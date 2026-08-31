@@ -22,7 +22,7 @@ export function saveNetwork(network: RelationshipNetwork) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(network))
 }
 
-function sanitizeNetwork(value: unknown): RelationshipNetwork {
+export function sanitizeNetwork(value: unknown): RelationshipNetwork {
   if (!value || typeof value !== 'object') return EMPTY_NETWORK
   const candidate = value as Partial<RelationshipNetwork>
   const people = Array.isArray(candidate.people)
@@ -31,7 +31,9 @@ function sanitizeNetwork(value: unknown): RelationshipNetwork {
           person &&
           typeof person.id === 'string' &&
           typeof person.name === 'string' &&
-          GENDERS.includes(person.gender),
+          GENDERS.includes(person.gender) &&
+          typeof person.createdAt === 'string' &&
+          typeof person.updatedAt === 'string',
       )
     : []
   const personIds = new Set(people.map((person) => person.id))
@@ -43,10 +45,11 @@ function sanitizeNetwork(value: unknown): RelationshipNetwork {
           personIds.has(relationship.sourcePersonId) &&
           personIds.has(relationship.targetPersonId) &&
           relationship.sourcePersonId !== relationship.targetPersonId &&
-          RELATIONSHIP_TYPES.includes(relationship.type),
+          RELATIONSHIP_TYPES.includes(relationship.type) &&
+          typeof relationship.createdAt === 'string' &&
+          typeof relationship.updatedAt === 'string',
       )
     : []
 
   return { people, relationships }
 }
-

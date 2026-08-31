@@ -126,6 +126,14 @@ export function useRelationshipNetwork() {
     setNetwork((current) => removeRelationshipFromNetwork(current, id))
   }
 
+  const replaceNetwork = (next: RelationshipNetwork) => {
+    setNetwork(ensureInverseRelationships(
+      next,
+      () => crypto.randomUUID(),
+      new Date().toISOString(),
+    ))
+  }
+
   return {
     network,
     createPerson,
@@ -135,5 +143,6 @@ export function useRelationshipNetwork() {
     createRelationships,
     updateRelationship,
     deleteRelationship,
+    replaceNetwork,
   }
 }

@@ -7,6 +7,8 @@ import {
 } from '../../domain/relationship'
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog'
 import { Modal } from '../../shared/components/Modal'
+import { CloudSyncControls } from '../../shared/cloudkit/CloudSyncControls'
+import { useCloudKitSync } from '../../shared/cloudkit/useCloudKitSync'
 import { PersonForm } from '../people/PersonForm'
 import { RelationshipForm } from '../relationships/RelationshipForm'
 import { SmartRelationshipConfirmation } from '../relationships/SmartRelationshipConfirmation'
@@ -43,7 +45,9 @@ export function NetworkWorkspace() {
     createRelationships,
     updateRelationship,
     deleteRelationship,
+    replaceNetwork,
   } = useRelationshipNetwork()
+  const cloudSync = useCloudKitSync(network, replaceNetwork)
   const [personEditor, setPersonEditor] = useState<Person | 'create' | null>(null)
   const [relationshipEditor, setRelationshipEditor] = useState<Relationship | 'create' | null>(null)
   const [relationshipDraft, setRelationshipDraft] = useState<RelationshipDraft>({})
@@ -207,6 +211,7 @@ export function NetworkWorkspace() {
           </div>
         </div>
         <div className="topbar__actions">
+          <CloudSyncControls model={cloudSync} />
           <button className="button button--secondary" type="button" onClick={() => setPersonEditor('create')}>
             <span aria-hidden="true">＋</span> 添加人物
           </button>

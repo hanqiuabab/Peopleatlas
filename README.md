@@ -29,7 +29,9 @@
 - 星球模式选中人物时只保留与该人物有关的关系线，取消选择后恢复全部连线。
 - 平面和星球关系线不显示端点箭头；平面关系选中时仅高亮线条与标签，不显示方形外围框。
 - 星云模式支持自动缓慢漂移、暂停、拖拽探索、滚轮缩放和重置视角；选中人物后只保留相关关系丝线，节点或关系被选中时自动暂停。
-- 使用浏览器 localStorage 保存数据，刷新页面后仍可恢复。
+- 未登录或离线时使用浏览器 localStorage 保存数据，刷新页面后仍可恢复。
+- 配置 CloudKit Web API Token 后，网页通过 Apple 账户登录访问用户私有 iCloud 数据库，支持跨浏览器同步、离线保存和自动重试。
+- 首次迁移或多端分歧时显式提供“合并两份数据”“使用本地数据”和“使用 iCloud 数据”，不静默覆盖。
 - 提供桌面端和移动端响应式布局。
 
 ## 本地运行
@@ -49,7 +51,9 @@ npm run build
 
 ## 数据说明
 
-初稿数据只保存在当前浏览器中，不会上传到服务器。清除该站点的浏览器数据会同时清除图谱内容。
+图谱始终先保存到当前浏览器。未配置 CloudKit 或未登录时，数据只存在该浏览器；登录后会同步到用户 Apple 账户的私有 CloudKit 数据库。请注意，本轮网页快照与 `PeopleAtlas/` 原生 App 的 SwiftData 记录尚不互通。
+
+CloudKit 开发与上线配置见 [`Docs/CLOUDKIT_WEB_SETUP.md`](Docs/CLOUDKIT_WEB_SETUP.md)。
 
 ## 智能添加关系
 
@@ -68,3 +72,4 @@ npm run build
 - `RULES.md`：领域与工程规则。
 - `REQUIREMENTS.md`：产品需求和初版边界。
 - `PLAN.md`：实施阶段、进度和决策记录。
+- `Docs/CLOUDKIT_WEB_SETUP.md`：Apple 账户与 CloudKit Web 同步配置、schema 与验收步骤。

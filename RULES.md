@@ -24,3 +24,4 @@
 5. 不提交 `node_modules/`、构建产物、编辑器配置或本地密钥。
 6. 不在前端代码中存放密钥、口令或其他敏感信息。
 7. 未在需求中确认前，不擅自增加关系类型或性别类型；智能补全仅限已确认的父母、子女、兄弟姐妹规则，不推导祖孙、叔侄等其他亲属关系。
+8. CloudKit Web API Token 虽需发布到浏览器，仍必须通过构建环境注入并在 CloudKit Console 限制 Allowed Origins；Apple 私钥、server-to-server key 和用户令牌不得写入仓库或前端环境变量。
