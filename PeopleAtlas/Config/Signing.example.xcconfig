@@ -1,0 +1,7 @@
+// Copy to Signing.xcconfig (git-ignored), then enter your own values.
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+ATLAS_BUNDLE_IDENTIFIER = YOUR_UNIQUE_BUNDLE_IDENTIFIER
+// Register iCloud.<your bundle identifier> as a CloudKit container, or override this value.
+ATLAS_ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(ATLAS_BUNDLE_IDENTIFIER)
+// Keep Debug on Development; release and distribution builds must use Production.
+ATLAS_CLOUDKIT_ENVIRONMENT = Development

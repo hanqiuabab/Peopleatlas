@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="关系图谱 People Atlas 隐私政策。">
+  <title>隐私政策 · People Atlas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">关系图谱 · People Atlas</p>
+      <h1>隐私政策</h1>
+      <p class="muted">生效日期 / Effective date: __EFFECTIVE_DATE__</p>
+      <nav aria-label="页面导航">
+        <a href="index.html">首页 / Home</a>
+        <a href="support.html">支持 / Support</a>
+      </nav>
+    </header>
+
+    <div class="language-links" aria-label="语言跳转">
+      <a href="#zh">简体中文</a>
+      <a href="#en">English</a>
+    </div>
+
+    <article class="card" id="zh">
+      <h2>简体中文</h2>
+      <p>关系图谱先通过 SwiftData 将姓名、性别、备注和关系保存在设备本地；iCloud 可用时，Apple CloudKit 还会把它们同步到你的私有 iCloud 数据库及登录同一 Apple 账户的设备。应用不向开发者运营的服务器发送这些内容，不读取系统通讯录，不包含广告、分析或跟踪 SDK，也不要求创建应用账号。</p>
+
+      <h3>编辑、删除和备份</h3>
+      <p>你可以在应用内编辑、删除人物与关系，也可以主动导出 JSON 备份。删除人物会删除其相关关系；删除的记录只能通过你此前保存的备份恢复。导入备份会在确认后替换本地数据。备份是未加密的 JSON 文件，请仅保存到受信任的位置，并谨慎分享。</p>
+
+      <h3>iCloud 与第三方服务</h3>
+      <p>iCloud 同步由 Apple 提供，受你的 iCloud 设置、可用空间及 Apple 的隐私与安全政策约束。离线时应用继续使用本地数据，并在 iCloud 恢复后重试。设置页状态只表示账户可用性，不代表每项更改都已上传完成；请继续定期导出备份。</p>
+
+      <h3>你的责任</h3>
+      <p>请仅记录你有权使用的他人信息，不要使用应用侵犯他人的隐私或合法权益。如后续版本启用账号、云同步或新的数据处理方式，本政策将随之更新。</p>
+
+      <h3>联系我们</h3>
+      <p>开发者：__DEVELOPER_NAME__<br>邮箱：<a href="mailto:__CONTACT_EMAIL__">__CONTACT_EMAIL__</a></p>
+    </article>
+
+    <article class="card" id="en" lang="en">
+      <h2>English</h2>
+      <p>People Atlas first stores names, genders, notes, and relationships locally with SwiftData. When iCloud is available, Apple CloudKit synchronizes them to your private iCloud database and devices signed in to the same Apple Account. The app does not send this content to developer-operated servers, access system contacts, include advertising or analytics SDKs, or require a separate app account.</p>
+
+      <h3>Editing, deletion, and backups</h3>
+      <p>You can edit and delete records and explicitly export JSON backups. Deleting a person also deletes their relationships. Deleted records can only be restored from an earlier backup you kept. Importing a backup replaces local data after confirmation. Backups are unencrypted JSON files; store and share them carefully.</p>
+
+      <h3>iCloud and third-party services</h3>
+      <p>iCloud synchronization is provided by Apple under your iCloud settings, available storage, and Apple’s privacy and security terms. The app remains usable offline and retries when iCloud returns. Settings reports account availability, not completion of every upload. Continue exporting backups regularly.</p>
+
+      <h3>Your responsibilities</h3>
+      <p>Only record personal information you are entitled to use. If a future version adds accounts, cloud synchronization, or other data processing, this policy will be updated.</p>
+
+      <h3>Contact</h3>
+      <p>Developer: __DEVELOPER_NAME__<br>Email: <a href="mailto:__CONTACT_EMAIL__">__CONTACT_EMAIL__</a></p>
+    </article>
+
+    <footer>© __COPYRIGHT_YEAR__ __DEVELOPER_NAME__</footer>
+  </main>
+</body>
+</html>

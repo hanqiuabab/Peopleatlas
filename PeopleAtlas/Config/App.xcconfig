@@ -1,0 +1,33 @@
+PRODUCT_NAME = PeopleAtlas
+ATLAS_BUNDLE_IDENTIFIER = com.peopleatlas.app
+PRODUCT_BUNDLE_IDENTIFIER = $(ATLAS_BUNDLE_IDENTIFIER)
+ATLAS_ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(ATLAS_BUNDLE_IDENTIFIER)
+// Debug builds share the CloudKit development database. Release overrides this to Production.
+ATLAS_CLOUDKIT_ENVIRONMENT = Development
+CODE_SIGN_ENTITLEMENTS = Config/PeopleAtlas.entitlements
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+SWIFT_VERSION = 6.0
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+MACOSX_DEPLOYMENT_TARGET = 14.0
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator macosx
+TARGETED_DEVICE_FAMILY = 1,2
+SUPPORTS_MACCATALYST = NO
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_KEY_CFBundleDisplayName = People Atlas
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.lifestyle
+INFOPLIST_KEY_NSPrincipalClass[sdk=macosx*] = NSApplication
+INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
+// SwiftData CloudKit uses silent remote notifications to import changes promptly.
+INFOPLIST_FILE[sdk=iphone*] = Config/iOS-Info.plist
+// UIKit scene metadata belongs only to iPhone/iPad, not the native AppKit application.
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*] = YES
+INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphone*] = YES
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone[sdk=iphone*] = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphone*] = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+ENABLE_APP_SANDBOX = YES
+ENABLE_USER_SELECTED_FILES = readwrite
+CODE_SIGN_STYLE = Automatic
+#include? "Signing.xcconfig"
