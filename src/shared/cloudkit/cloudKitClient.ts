@@ -147,7 +147,6 @@ export function createCloudKitClientFromNamespace(
         signOutButton: { id: 'apple-sign-out-button', theme: 'black' },
       },
     }],
-    services: { fetch: window.fetch.bind(window) },
   })
 
   const container = cloudKit.getDefaultContainer()
