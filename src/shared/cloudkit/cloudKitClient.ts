@@ -4,9 +4,12 @@ import type { CloudKitConfig } from './cloudKitConfig'
 import type { CloudNetworkSnapshot } from './cloudNetwork'
 
 const CLOUDKIT_SCRIPT_URL = 'https://cdn.apple-cloudkit.com/ck/2/cloudkit.js'
+const CLOUDKIT_API_ORIGIN = 'https://api.apple-cloudkit.com'
 const RECORD_NAME = 'primary-network-v1'
 const RECORD_TYPE = 'PeopleAtlasWebNetwork'
 const APPLE_IDENTITY_HOST = 'idmsa.apple.com'
+const WEB_AUTH_TOKEN_HEADER = 'x-apple-cloudkit-web-auth-token'
+const SESSION_HEADER = 'x-apple-cloudkit-session'
 const sameTabRedirectTargets = new WeakSet<EventTarget>()
 
 export function installSameTabCloudKitAuthRedirect(
@@ -66,6 +69,7 @@ interface CloudKitErrorLike {
   message?: string
   reason?: string
   serverErrorCode?: string
+  uuid?: string
 }
 
 export interface CloudKitRecordField {
@@ -118,6 +122,53 @@ export class CloudKitOperationError extends Error {
     super(message)
     this.name = 'CloudKitOperationError'
     this.code = code
+  }
+}
+
+export interface CloudKitWebAuthExchange {
+  identity: CloudKitUserIdentity
+  webAuthToken: string
+}
+
+export async function exchangeCloudKitWebAuthToken(
+  config: CloudKitConfig,
+  webAuthToken: string,
+  request: typeof fetch = window.fetch.bind(window),
+): Promise<CloudKitWebAuthExchange> {
+  const query = new URLSearchParams({
+    ckAPIToken: config.apiToken,
+    ckWebAuthToken: webAuthToken,
+  })
+  const endpoint = `${CLOUDKIT_API_ORIGIN}/database/1/${encodeURIComponent(config.containerIdentifier)}/${config.environment}/public/users/current?${query}`
+  const response = await request(endpoint, {
+    method: 'GET',
+    credentials: 'omit',
+    cache: 'no-store',
+    referrerPolicy: 'no-referrer',
+  })
+  const payload = await response.json().catch(() => ({})) as CloudKitErrorLike & {
+    userRecordName?: string
+  }
+  const rotatedToken = response.headers.get(WEB_AUTH_TOKEN_HEADER)
+    ?? response.headers.get(SESSION_HEADER)
+
+  if (!response.ok || !payload.userRecordName || !rotatedToken) {
+    const serverCode = payload.serverErrorCode ?? payload.ckErrorCode
+    const details = [
+      `HTTP ${response.status}`,
+      serverCode,
+      payload.uuid ? `请求 UUID ${payload.uuid}` : undefined,
+    ].filter(Boolean).join('，')
+    const reason = payload.reason ?? payload.message ?? 'CloudKit 未返回有效用户身份或轮换 Token'
+    throw new CloudKitOperationError(
+      `CloudKit Web 认证探测失败（${details}）：${reason}`,
+      'WEB_AUTH_TOKEN_REJECTED',
+    )
+  }
+
+  return {
+    identity: { userRecordName: payload.userRecordName },
+    webAuthToken: rotatedToken,
   }
 }
 
@@ -184,8 +235,8 @@ export interface CloudKitClient {
 export function createCloudKitClientFromNamespace(
   cloudKit: CloudKitNamespace,
   config: CloudKitConfig,
+  callbackWebAuthToken: string | undefined = consumeCloudKitWebAuthToken(),
 ): CloudKitClient {
-  const webAuthToken = consumeCloudKitWebAuthToken()
   cloudKit.configure({
     containers: [{
       containerIdentifier: config.containerIdentifier,
@@ -194,7 +245,7 @@ export function createCloudKitClientFromNamespace(
         : cloudKit.DEVELOPMENT_ENVIRONMENT,
       apiTokenAuth: {
         apiToken: config.apiToken,
-        ...(webAuthToken ? { ckWebAuthToken: webAuthToken } : {}),
+        ...(callbackWebAuthToken ? { ckWebAuthToken: callbackWebAuthToken } : {}),
         persist: true,
         signInButton: { id: 'apple-sign-in-button', theme: 'black' },
         signOutButton: { id: 'apple-sign-out-button', theme: 'black' },
@@ -261,5 +312,13 @@ function loadCloudKit(): Promise<CloudKitNamespace> {
 export async function createCloudKitClient(config: CloudKitConfig): Promise<CloudKitClient> {
   const signInTarget = document.getElementById('apple-sign-in-button')
   if (signInTarget) installSameTabCloudKitAuthRedirect(signInTarget)
-  return createCloudKitClientFromNamespace(await loadCloudKit(), config)
+  const callbackWebAuthToken = consumeCloudKitWebAuthToken()
+  const exchangedWebAuthToken = callbackWebAuthToken
+    ? (await exchangeCloudKitWebAuthToken(config, callbackWebAuthToken)).webAuthToken
+    : undefined
+  return createCloudKitClientFromNamespace(
+    await loadCloudKit(),
+    config,
+    exchangedWebAuthToken,
+  )
 }

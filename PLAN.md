@@ -8,7 +8,7 @@
 - [x] 实现本地优先的私有 CloudKit 图谱快照读写、同步状态和网络恢复后重试。
 - [x] 实现首次迁移及多端分歧时的显式合并/覆盖选择，不静默丢失数据。
 - [x] 补充 CloudKit 配置示例、部署说明、单元测试、类型检查与生产构建验证；152 项测试、类型检查和生产构建通过，桌面/移动端未配置状态浏览器验收通过，控制台无错误。
-- [x] 创建并限制 Development Web API Token，通过 GitHub Actions 部署到 GitHub Pages；Apple 登录改为同标签页跳转以兼容内部浏览器，154 项测试、类型检查和生产构建通过。
+- [x] 创建并限制 Development Web API Token，通过 GitHub Actions 部署到 GitHub Pages；Apple 登录改为同标签页跳转以兼容内部浏览器，并在回跳后按官方 `users/current` 端点交换轮换 Token、保留非敏感失败诊断，156 项测试、类型检查和生产构建通过。
 - [ ] 在 CloudKit Console 创建并限制 Web API Token，将 `PeopleAtlasWebNetwork` schema 部署到 Production，用两个浏览器完成真实 Apple 账户同步验收。
 
 ## 阶段 0：工程初始化

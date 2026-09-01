@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { RelationshipNetwork } from '../../domain/network'
 import {
   createCloudKitClientFromNamespace,
+  exchangeCloudKitWebAuthToken,
   extractCloudKitWebAuthToken,
   installSameTabCloudKitAuthRedirect,
   type CloudKitDatabase,
@@ -66,6 +67,57 @@ describe('CloudKit network client', () => {
     expect(originalOpen).not.toHaveBeenCalled()
     vi.runAllTimers()
     expect(window.open).toBe(originalOpen)
+  })
+
+  it('exchanges a callback token directly and returns the rotated CloudKit token', async () => {
+    const request = vi.fn(async (input: string | URL | Request) => {
+      const url = new URL(input.toString())
+      expect(url.pathname).toBe(
+        '/database/1/iCloud.example/development/public/users/current',
+      )
+      expect(url.searchParams.get('ckAPIToken')).toBe('api+/=')
+      expect(url.searchParams.get('ckWebAuthToken')).toBe('web+/=')
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'x-apple-cloudkit-web-auth-token': 'rotated-token' }),
+        json: async () => ({ userRecordName: 'user-record' }),
+      } as Response
+    }) as typeof fetch
+
+    await expect(exchangeCloudKitWebAuthToken({
+      containerIdentifier: 'iCloud.example',
+      apiToken: 'api+/=',
+      environment: 'development',
+    }, 'web+/=', request)).resolves.toEqual({
+      identity: { userRecordName: 'user-record' },
+      webAuthToken: 'rotated-token',
+    })
+  })
+
+  it('reports a rejected callback token without exposing either token', async () => {
+    const request = vi.fn(async () => ({
+      ok: false,
+      status: 421,
+      headers: new Headers(),
+      json: async () => ({
+        serverErrorCode: 'AUTHENTICATION_REQUIRED',
+        reason: 'request needs authorization',
+        uuid: 'request-uuid',
+      }),
+    } as Response)) as typeof fetch
+
+    const result = exchangeCloudKitWebAuthToken({
+      containerIdentifier: 'iCloud.example',
+      apiToken: 'private-api-token',
+      environment: 'development',
+    }, 'private-web-token', request)
+
+    await expect(result).rejects.toMatchObject({
+      code: 'WEB_AUTH_TOKEN_REJECTED',
+      message: expect.stringContaining('HTTP 421，AUTHENTICATION_REQUIRED，请求 UUID request-uuid'),
+    })
+    await expect(result).rejects.not.toThrow(/private-(api|web)-token/)
   })
 
   it('treats a missing private record as an empty cloud store', async () => {
