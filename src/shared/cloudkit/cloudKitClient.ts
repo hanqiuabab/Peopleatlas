@@ -6,6 +6,39 @@ import type { CloudNetworkSnapshot } from './cloudNetwork'
 const CLOUDKIT_SCRIPT_URL = 'https://cdn.apple-cloudkit.com/ck/2/cloudkit.js'
 const RECORD_NAME = 'primary-network-v1'
 const RECORD_TYPE = 'PeopleAtlasWebNetwork'
+const APPLE_IDENTITY_HOST = 'idmsa.apple.com'
+const sameTabRedirectTargets = new WeakSet<EventTarget>()
+
+export function installSameTabCloudKitAuthRedirect(
+  target: EventTarget,
+  navigate: (url: string) => void = (url) => window.location.assign(url),
+): void {
+  if (sameTabRedirectTargets.has(target)) return
+  sameTabRedirectTargets.add(target)
+
+  target.addEventListener('click', () => {
+    const originalOpen = window.open
+    const redirectingOpen = ((
+      url?: string | URL,
+      targetName?: string,
+      features?: string,
+    ) => {
+      if (url) {
+        const destination = new URL(url.toString(), window.location.href)
+        if (destination.protocol === 'https:' && destination.hostname === APPLE_IDENTITY_HOST) {
+          navigate(destination.href)
+          return null
+        }
+      }
+      return originalOpen.call(window, url, targetName, features)
+    }) as typeof window.open
+
+    window.open = redirectingOpen
+    window.setTimeout(() => {
+      if (window.open === redirectingOpen) window.open = originalOpen
+    }, 0)
+  }, true)
+}
 
 export function extractCloudKitWebAuthToken(href: string): string | undefined {
   const token = new URL(href).searchParams.get('ckWebAuthToken')?.trim()
@@ -226,5 +259,7 @@ function loadCloudKit(): Promise<CloudKitNamespace> {
 }
 
 export async function createCloudKitClient(config: CloudKitConfig): Promise<CloudKitClient> {
+  const signInTarget = document.getElementById('apple-sign-in-button')
+  if (signInTarget) installSameTabCloudKitAuthRedirect(signInTarget)
   return createCloudKitClientFromNamespace(await loadCloudKit(), config)
 }

@@ -3,6 +3,7 @@ import type { RelationshipNetwork } from '../../domain/network'
 import {
   createCloudKitClientFromNamespace,
   extractCloudKitWebAuthToken,
+  installSameTabCloudKitAuthRedirect,
   type CloudKitDatabase,
   type CloudKitNamespace,
   type CloudKitRecord,
@@ -15,7 +16,10 @@ const network: RelationshipNetwork = {
   relationships: [],
 }
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.useRealTimers()
+  vi.unstubAllGlobals()
+})
 
 function namespace(database: CloudKitDatabase, configure = vi.fn()): CloudKitNamespace {
   return {
@@ -37,6 +41,31 @@ describe('CloudKit network client', () => {
       'https://example.com/app/?ckWebAuthToken=session-token&ckSession=duplicate',
     )).toBe('session-token')
     expect(extractCloudKitWebAuthToken('https://example.com/app/')).toBeUndefined()
+  })
+
+  it('redirects the CloudKit Apple sign-in window in the current tab', () => {
+    vi.useFakeTimers()
+    const originalOpen = vi.fn()
+    const navigate = vi.fn()
+    vi.stubGlobal('window', {
+      location: { href: 'https://example.com/app/' },
+      open: originalOpen,
+      setTimeout,
+    })
+    const target = new EventTarget()
+    installSameTabCloudKitAuthRedirect(target, navigate)
+    target.addEventListener('click', () => {
+      window.open('https://idmsa.apple.com/IDMSWebAuth/auth?oauth_token=test')
+    })
+
+    target.dispatchEvent(new Event('click'))
+
+    expect(navigate).toHaveBeenCalledWith(
+      'https://idmsa.apple.com/IDMSWebAuth/auth?oauth_token=test',
+    )
+    expect(originalOpen).not.toHaveBeenCalled()
+    vi.runAllTimers()
+    expect(window.open).toBe(originalOpen)
   })
 
   it('treats a missing private record as an empty cloud store', async () => {
