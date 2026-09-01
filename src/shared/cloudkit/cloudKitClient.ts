@@ -21,12 +21,6 @@ function consumeCloudKitWebAuthToken(): string | undefined {
   url.searchParams.delete('ckWebAuthToken')
   url.searchParams.delete('ckSession')
   window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
-
-  if (window.opener && window.opener !== window && !window.opener.closed) {
-    window.opener.postMessage({ ckSession: token }, window.location.origin)
-    window.close()
-  }
-
   return token
 }
 
