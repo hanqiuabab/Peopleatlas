@@ -3,7 +3,7 @@ import { sanitizeNetwork } from '../storage/networkRepository'
 import type { CloudKitConfig } from './cloudKitConfig'
 import type { CloudNetworkSnapshot } from './cloudNetwork'
 
-const CLOUDKIT_SCRIPT_URL = 'https://cdn.apple-cloudkit.com/ck/2/CloudKit.js'
+const CLOUDKIT_SCRIPT_URL = 'https://cdn.apple-cloudkit.com/ck/2/cloudkit.js'
 const RECORD_NAME = 'primary-network-v1'
 const RECORD_TYPE = 'PeopleAtlasWebNetwork'
 
