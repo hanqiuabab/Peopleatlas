@@ -7,6 +7,29 @@ const CLOUDKIT_SCRIPT_URL = 'https://cdn.apple-cloudkit.com/ck/2/cloudkit.js'
 const RECORD_NAME = 'primary-network-v1'
 const RECORD_TYPE = 'PeopleAtlasWebNetwork'
 
+export function extractCloudKitWebAuthToken(href: string): string | undefined {
+  const token = new URL(href).searchParams.get('ckWebAuthToken')?.trim()
+  return token || undefined
+}
+
+function consumeCloudKitWebAuthToken(): string | undefined {
+  if (!window.location?.href) return undefined
+  const url = new URL(window.location.href)
+  const token = extractCloudKitWebAuthToken(url.href)
+  if (!token) return undefined
+
+  url.searchParams.delete('ckWebAuthToken')
+  url.searchParams.delete('ckSession')
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+
+  if (window.opener && window.opener !== window && !window.opener.closed) {
+    window.opener.postMessage({ ckSession: token }, window.location.origin)
+    window.close()
+  }
+
+  return token
+}
+
 export interface CloudKitUserIdentity {
   userRecordName: string
 }
@@ -135,6 +158,7 @@ export function createCloudKitClientFromNamespace(
   cloudKit: CloudKitNamespace,
   config: CloudKitConfig,
 ): CloudKitClient {
+  const webAuthToken = consumeCloudKitWebAuthToken()
   cloudKit.configure({
     containers: [{
       containerIdentifier: config.containerIdentifier,
@@ -143,6 +167,7 @@ export function createCloudKitClientFromNamespace(
         : cloudKit.DEVELOPMENT_ENVIRONMENT,
       apiTokenAuth: {
         apiToken: config.apiToken,
+        ...(webAuthToken ? { ckWebAuthToken: webAuthToken } : {}),
         persist: true,
         signInButton: { id: 'apple-sign-in-button', theme: 'black' },
         signOutButton: { id: 'apple-sign-out-button', theme: 'black' },

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { RelationshipNetwork } from '../../domain/network'
 import {
   createCloudKitClientFromNamespace,
+  extractCloudKitWebAuthToken,
   type CloudKitDatabase,
   type CloudKitNamespace,
   type CloudKitRecord,
@@ -31,6 +32,13 @@ function namespace(database: CloudKitDatabase, configure = vi.fn()): CloudKitNam
 }
 
 describe('CloudKit network client', () => {
+  it('extracts the web auth token from an Apple redirect URL', () => {
+    expect(extractCloudKitWebAuthToken(
+      'https://example.com/app/?ckWebAuthToken=session-token&ckSession=duplicate',
+    )).toBe('session-token')
+    expect(extractCloudKitWebAuthToken('https://example.com/app/')).toBeUndefined()
+  })
+
   it('treats a missing private record as an empty cloud store', async () => {
     vi.stubGlobal('window', { fetch: vi.fn() })
     const database: CloudKitDatabase = {
