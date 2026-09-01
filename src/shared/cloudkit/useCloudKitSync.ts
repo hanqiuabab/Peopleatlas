@@ -33,8 +33,14 @@ export interface CloudSyncConflict {
 export type ConflictResolution = 'merge' | 'local' | 'cloud'
 
 function errorMessage(error: unknown): string {
-  if (error instanceof CloudKitOperationError) {
-    switch (error.code) {
+  if (error && typeof error === 'object') {
+    const candidate = error as CloudKitOperationError & {
+      ckErrorCode?: string
+      reason?: string
+      serverErrorCode?: string
+    }
+    const code = candidate.code ?? candidate.ckErrorCode ?? candidate.serverErrorCode
+    switch (code) {
       case 'NETWORK_ERROR':
       case 'SERVICE_UNAVAILABLE':
       case 'TRY_AGAIN_LATER':
@@ -45,7 +51,9 @@ function errorMessage(error: unknown): string {
       case 'AUTHENTICATION_FAILED':
         return '请重新登录 Apple 账户后再同步。'
       default:
-        return error.message
+        if (candidate.reason) return candidate.reason
+        if (candidate.message) return candidate.message
+        if (code) return `iCloud 返回错误：${code}`
     }
   }
   return '无法完成 iCloud 同步，本地数据未丢失。'

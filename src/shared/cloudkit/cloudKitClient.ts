@@ -12,6 +12,7 @@ export interface CloudKitUserIdentity {
 }
 
 interface CloudKitErrorLike {
+  ckErrorCode?: string
   message?: string
   reason?: string
   serverErrorCode?: string
@@ -76,7 +77,7 @@ function operationError(error: unknown, fallback: string): CloudKitOperationErro
     const candidate = error as CloudKitErrorLike
     return new CloudKitOperationError(
       candidate.reason ?? candidate.message ?? fallback,
-      candidate.serverErrorCode,
+      candidate.serverErrorCode ?? candidate.ckErrorCode,
     )
   }
   return new CloudKitOperationError(fallback)
@@ -147,6 +148,7 @@ export function createCloudKitClientFromNamespace(
         signOutButton: { id: 'apple-sign-out-button', theme: 'black' },
       },
     }],
+    services: { logger: window.console },
   })
 
   const container = cloudKit.getDefaultContainer()
